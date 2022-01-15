@@ -12,3 +12,7 @@ sudo make install
 ```
 
 You may need to udpate the  symbolic link of your current pinentry program, or update some configuration file for the program you are using *(gpg uses gpg-anget.conf to specify pinentry if needed)*.
+
+## Other Useful Tools
+
+Checkout [Pinentry Switcher](https://github.com/zamlz/pinentry-switcher.git), another tool I made to switch between different pinentry tools based on the context (an environment variable).
