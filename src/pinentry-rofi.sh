@@ -10,6 +10,13 @@
 # Source this file to use my colorscheme
 # . $HOME/lib/shell/xrdb_colors
 
+ENABLE_LOGGING="FALSE"
+logger() {
+    if [ "$ENABLE_LOGGING" = "TRUE" ]; then
+        /usr/bin/logger --tag "${0} [$$]" "$@";
+    fi
+}
+
 # Base command and misc variables
 ROFI="/usr/bin/rofi -dmenu -input /dev/null -password -lines 0"
 DESC=""
@@ -25,14 +32,14 @@ if [ -z "${DISPLAY}" ]; then
     fi
 fi
 
-#echo "pinentry-rofi started" > /tmp/pinentry-rofi.log
-#echo "DISPLAY=< $DISPLAY >" >> /tmp/pinentry-rofi.log
+logger "pinentry-rofi started"
+logger "DISPLAY=< $DISPLAY >"
 
 
 echo "OK Please go ahead"
 while read cmd rest; do
-    #echo "RAW=< ${cmd} ${rest} >" >>/tmp/pinentry-rofi.log
-    #echo "cmd=<${cmd}> rest=<${rest}>" >>/tmp/pinentry-rofi.log
+    logger "RAW=< ${cmd} ${rest} >"
+    logger "cmd=<${cmd}> rest=<${rest}>"
 
     if [ -z "$cmd" ]; then
         continue;
@@ -72,13 +79,13 @@ while read cmd rest; do
         SETERROR)
             # Added _ERO_ and _ERC_ as markers to help the sed operation in
             # the GETPIN command.
-            ERROR=$( echo _ERO_${rest}_ERC_ | awk '{print toupper($0)}')
+            ERROR=$( echo "_ERO_${rest}_ERC_" | awk '{print toupper($0)}')
             echo "OK"
             ;;
 
         SETPROMPT)
             # rofi already adds a :
-            PROMPT=$(echo $rest | tr -d ':')
+            PROMPT=$(echo "$rest" | tr -d ':')
             echo "OK"
             ;;
 
@@ -90,7 +97,7 @@ while read cmd rest; do
             # the text so that rofi doesn't complain about the input it gets.
             # Ironically, its also the only way I have figured out how to
             # insert newlines...
-            MESSAGE=$( echo "$ERROR$DESC" | sed -e "s|%0A||g"                \
+            MESSAGE=$( echo "$ERROR$DESC" | sed -e "s|%0A|\n|g"              \
                                     -e "s|%22||g"                            \
                                     -e "s|key:|key:\n|g"                     \
                                     -e "s|>|>\n|g"                           \
@@ -101,10 +108,10 @@ while read cmd rest; do
                                     -e "s|_ERC_|</span>\n|g"                 )
 
             rofi_cmd="$ROFI -p \"$PROMPT\" -mesg \"$MESSAGE\""
-            #echo "GETPIN, calling rofi: ${rofi_cmd}" >> /tmp/pinentry-rofi.log
+            logger "GETPIN, calling rofi: ${rofi_cmd}"
 
             _PP=$( $ROFI -p "$PROMPT" -mesg "$MESSAGE" )
-            #echo "ROFI : ERC=<$?>, _PP=<${_PP}>" >> /tmp/pinentry-rofi.log
+            logger "ROFI : ERC=<$?>, _PP=<${_PP}>"
 
             if [ -n "$_PP" ]; then
                 echo "D $_PP"
@@ -113,7 +120,7 @@ while read cmd rest; do
             ;;
 
         BYE)
-            #echo "BYE, exiting" >>/tmp/pinentry-rofi.log
+            logger "BYE, exiting"
             echo "OK closing connection"
             exit 0
             ;;
@@ -123,4 +130,4 @@ while read cmd rest; do
             ;;
     esac
 done
-#echo "EOF, exiting" >>/tmp/pinentry-rofi.log
+logger "EOF, exiting"
