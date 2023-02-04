@@ -121,6 +121,8 @@ while read cmd rest; do
 
         BYE)
             logger "BYE, exiting"
+            # FIXME: broken pipe appears here as connection is closing.
+            #        gpg may be closing earlier than pinentry expects?
             echo "OK closing connection"
             exit 0
             ;;
